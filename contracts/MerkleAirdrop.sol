@@ -14,7 +14,6 @@ contract Merkle {
 
     mapping(address => bool) claimed;
 
-    /// @dev pass in the address of the token address at construction
     constructor(address _tokenAddress) {
         tokenAddress = _tokenAddress;
     }

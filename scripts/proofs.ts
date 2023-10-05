@@ -16,28 +16,26 @@ function main() {
   const filename = path.join(__dirname, "gen_files/AirdropData.csv");
 
   // what file should we write the merkle proofs too?
-  const output_file = path.join(__dirname, "gen_files/claimer.json");
+  const output_file = path.join(__dirname, "gen_files/merkle_tree.json");
 
   //file that has the user claim list
   const userclaimFile = path.join(__dirname, "gen_files/claimer2.json");
 
   //contract of items being sent out
-  const airdropContract = "";
+  const airdropContract = "0xa5a6af6C7Eb4F39Ac3E247887FdaF86f0E649794";
 
   // used to store one leaf for each line in the distribution file
   const token_dist: any[] = [];
 
   // used for tracking user_id of each leaf so we can write to proofs file accordingly
   const user_dist_list: any[][] = [];
-
-  // open distribution csv
   fs.createReadStream(filename)
     .pipe(csv())
-    .on("data", (row: { [x: string]: any }) => {
-      const user_dist = [row["user_address"], row["itemID"], row["amount"]]; // create record to track user_id of leaves
+    .on("data", (row) => {
+      const user_dist = [row["user_address"], row["amount"]]; // create record to track user_id of leaves
       const leaf_hash = utils.solidityKeccak256(
-        ["address", "uint256", "uint256"],
-        [row["user_address"], row["itemID"], row["amount"]]
+        ["address", "uint256"],
+        [row["user_address"], row["amount"]]
       ); // encode base data like solidity abi.encode
       user_dist_list.push(user_dist); // add record to index tracker
       token_dist.push(leaf_hash); // add leaf hash to distribution
@@ -55,15 +53,16 @@ function main() {
 
   // write leaves & proofs to json file
   function write_leaves(
-    merkle_tree: { getHexProof: (arg0: any) => any },
-    user_dist_list: any[],
+    merkle_tree: MerkleTree,
+    user_dist_list: string | any[],
     token_dist: any[],
-    root: any
+    root: string
   ) {
     console.log("Begin writing leaves to file...");
     let full_dist: { [key: string]: any } = {};
     let full_user_claim: { [key: string]: any } = {};
     let line: number;
+
     for (line = 0; line < user_dist_list.length; line++) {
       // generate leaf hash from raw data
       const leaf = token_dist[line];
