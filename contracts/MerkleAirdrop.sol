@@ -29,7 +29,7 @@ contract Merkle is ERC20 {
             revert NotWhitelisted();
         }
 
-        claimed[msg.sender] = true;
+        claimed[_account] = true;
 
         _mint(_account, _amount);
         return true;
